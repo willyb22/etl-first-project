@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  source_db:
+    build: ./source_db
+    # restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=willy
+      - POSTGRES_PASSWORD=willy
+      - POSTGRES_DB=source_db
+    volumes:
+      - postgres_source_db:/var/lib/postgresql/data
+      - ./source_db/initial-data:/initial-data
+
+volumes:
+  postgres_source_db:
