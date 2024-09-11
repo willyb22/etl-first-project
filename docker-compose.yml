@@ -6,13 +6,25 @@ services:
     # restart: always
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER=willy
-      - POSTGRES_PASSWORD=willy
-      - POSTGRES_DB=source_db
+    env_file:
+      - ./source_db/.env
     volumes:
       - postgres_source_db:/var/lib/postgresql/data
       - ./source_db/initial-data:/initial-data
+  destination_db:
+    image: postgres:15
+    ports:
+      - "5433:5432"
+    env_file:
+      - ./destination_db/.env
+    volumes:
+      - postgres_destination_db:/var/lib/postgresql/data
+  etl:
+    build: ./etl
+    volumes:
+      - ./etl:/app
+    entrypoint: ["python3", "/app/main.py"]
 
 volumes:
   postgres_source_db:
+  postgres_destination_db:
