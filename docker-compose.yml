@@ -3,7 +3,7 @@ version: '3.8'
 services:
   source_db:
     build: ./source_db
-    # restart: always
+    restart: always
     ports:
       - "5432:5432"
     env_file:
@@ -11,20 +11,89 @@ services:
     volumes:
       - postgres_source_db:/var/lib/postgresql/data
       - ./source_db/initial-data:/initial-data
+    networks:
+      - source_db_network
   destination_db:
     image: postgres:15
+    restart: always
     ports:
       - "5433:5432"
     env_file:
       - ./destination_db/.env
     volumes:
       - postgres_destination_db:/var/lib/postgresql/data
+    networks:
+      - destination_db_network
   etl:
     build: ./etl
     volumes:
       - ./etl:/app
-    entrypoint: ["python3", "/app/main.py"]
+    command: ["flask", "run", "--host=0.0.0.0"]
+    environment:
+      - FLASK_APP=/app/api.py
+    ports:
+      - "5000:5000"
+    depends_on:
+      - source_db
+      - destination_db
+    networks:
+      - source_db_network
+      - destination_db_network
+  scheduler:
+    build: ./scheduler
+    volumes:
+      - ./scheduler/dags:/opt/airflow/dags
+    ports:
+      - "8080:8080"
+    entrypoint: [ "/entrypoint.sh" ]
+    environment:
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@airflow_db:5432/airflow_db
+      - _AIRFLOW_WWW_USER_USERNAME=admin
+      - _AIRFLOW_WWW_USER_PASSWORD=admin
+    env_file:
+      - ./scheduler/.env
+    depends_on:
+      - etl
+      - airflow_db
+    networks:
+      - destination_db_network
+      - airflow_db_network
+  airflow_db:
+    image: postgres:15
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=airflow_db
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+    volumes:
+      - postgres_airflow_db:/var/lib/postgresql/data
+    networks:
+      - airflow_db_network
+  notebooks:
+    build: ./notebooks
+    ports:
+      - "8888:8888"
+    networks:
+      - destination_db_network
+    depends_on:
+      - destination_db
+    volumes:
+      - ./notebooks/notebooks:/app/notebooks
+    command: jupyter notebook --ip=0.0.0.0 --no-browser --allow-root --notebook-dir=/app/notebooks
+
 
 volumes:
   postgres_source_db:
   postgres_destination_db:
+  postgres_airflow_db:
+
+networks:
+  source_db_network:
+    driver: bridge
+  destination_db_network:
+    driver: bridge
+  airflow_db_network:
+    driver: bridge

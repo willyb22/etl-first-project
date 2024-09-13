@@ -1,3 +1,5 @@
 /source_db/initial-data/*.txt
 .env
-__pycache__/*
+__pycache__
+secret.*
+.*/

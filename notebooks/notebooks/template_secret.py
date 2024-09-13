@@ -1,0 +1,1 @@
+DESTINATION_DB_URL='postgresql+psycopg2://new_user:new_password@destination_db:5432/destination_db'

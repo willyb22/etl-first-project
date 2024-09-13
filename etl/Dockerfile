@@ -12,9 +12,12 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy your ETL script into the container
 COPY main.py /app/main.py
+COPY api.py /app/api.py
 
 # Set the working directory
 WORKDIR /app
 
+EXPOSE 5000
+
 # Define the entry point for the container
-ENTRYPOINT ["python3", "/app/main.py"]
+CMD ["flask", "run", "--host=0.0.0.0"]
