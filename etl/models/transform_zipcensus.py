@@ -1,4 +1,4 @@
-from pyspark.sql.functions import sum
+from pyspark.sql.functions import sum, first
 
 def process(sparksession, source_db_url, destination_db_url):
     print(source_db_url)
@@ -10,6 +10,7 @@ def process(sparksession, source_db_url, destination_db_url):
     
     group_df = source_df.groupBy("stab") \
         .agg(
+            first("state").alias("state"),
             sum("landsqmi").alias("total_landsqmi"),
             sum("totpop").alias("total_population")
         )

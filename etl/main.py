@@ -12,7 +12,10 @@ def main():
 
     # Call your transformation functions
     m = Model(source_db_url, destination_db_url)
-    m.transform_zip_to_stab_census()
+    m.transform_zipcensus()
+    m.transform_calendar()
+    m.load_tables()
+    m.transform_orders()
     m.spark.stop()
 
 if __name__ == "__main__":
