@@ -9,3 +9,5 @@ Here's the services that i use:
 - scheduler: using apache/airflow, contains the dags that is managing the new_user role (grant and revoke the previllage of the notebooks user to use select command of destination_db) and also do trigger the etl.
 - notebooks: using jupyter, as new_user do data science on destination_db
 
+You can read the overview of this project in the etl-first-project-overview.pdf
+
