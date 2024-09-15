@@ -11,3 +11,4 @@ Here's the services that i use:
 
 You can read the overview of this project in the etl-first-project-overview.pdf
 
+You can see the analysis in the directory /notebooks/notebooks
